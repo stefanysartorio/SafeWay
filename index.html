@@ -1,0 +1,209 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SafeWay | Sua segurança digital</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header class="topo">
+    <div class="logo">🛡️ SafeWay</div>
+    <nav>
+        <button onclick="mostrarPagina('inicio')">Início</button>
+        <button onclick="mostrarPagina('radar')">Radar</button>
+        <button onclick="mostrarPagina('sos')">SOS Golpe</button>
+        <button onclick="mostrarPagina('ajuda')">Central de Ajuda</button>
+    </nav>
+</header>
+
+<main>
+    <section id="inicio" class="pagina ativa">
+        <div class="destaque">
+            <span class="etiqueta">SUA SEGURANÇA DIGITAL</span>
+            <h1>Mais segurança para você navegar.</h1>
+            <p>Informação e orientação para ajudar você a reconhecer golpes digitais e proteger seus dados.</p>
+            <button class="botao-principal" onclick="mostrarPagina('radar')">
+                Explorar Radar de Golpes
+            </button>
+        </div>
+
+        <h2>Como podemos ajudar?</h2>
+        <div class="cartoes">
+            <article class="cartao">
+                <span>🔎</span>
+                <h3>Radar de Golpes</h3>
+                <p>Conheça golpes comuns e aprenda a identificar sinais de fraude.</p>
+                <button onclick="mostrarPagina('radar')">Acessar</button>
+            </article>
+
+            <article class="cartao">
+                <span>🚨</span>
+                <h3>SOS Golpe</h3>
+                <p>Veja orientações para agir quando suspeitar de um golpe.</p>
+                <button onclick="mostrarPagina('sos')">Acessar</button>
+            </article>
+
+            <article class="cartao">
+                <span>☎️</span>
+                <h3>Central de Ajuda</h3>
+                <p>Encontre caminhos para buscar ajuda em canais oficiais.</p>
+                <button onclick="mostrarPagina('ajuda')">Acessar</button>
+            </article>
+        </div>
+    </section>
+
+    <section id="radar" class="pagina">
+        <h1>🔎 Radar de Golpes</h1>
+        <p>Aprenda a reconhecer algumas das fraudes digitais mais comuns.</p>
+
+        <input id="pesquisaGolpe" type="text"
+            placeholder="Pesquisar um golpe..."
+            oninput="filtrarGolpes()">
+
+        <div id="listaGolpes" class="cartoes">
+            <article class="cartao golpe">
+                <h3>💸 Golpe do Pix</h3>
+                <p>Criminosos podem enviar cobranças falsas, comprovantes adulterados ou pedidos de transferência.</p>
+                <strong>Como se proteger:</strong>
+                <p>Confira o destinatário e o valor antes de transferir. Verifique se o dinheiro realmente entrou na conta.</p>
+            </article>
+
+            <article class="cartao golpe">
+                <h3>💬 Golpe do WhatsApp</h3>
+                <p>Uma pessoa pode usar a foto de alguém conhecido para pedir dinheiro por outro número.</p>
+                <strong>Como se proteger:</strong>
+                <p>Confirme o pedido por uma ligação ou por outro contato que você já conhece.</p>
+            </article>
+
+            <article class="cartao golpe">
+                <h3>🏦 Falso funcionário do banco</h3>
+                <p>Alguém se passa por funcionário do banco para tentar conseguir dados ou convencer a vítima a transferir dinheiro.</p>
+                <strong>Como se proteger:</strong>
+                <p>Não informe senhas ou códigos. Procure o banco pelos canais oficiais.</p>
+            </article>
+
+            <article class="cartao golpe">
+                <h3>🛍️ Lojas falsas</h3>
+                <p>Sites ou perfis anunciam produtos com ofertas muito vantajosas e podem desaparecer depois do pagamento.</p>
+                <strong>Como se proteger:</strong>
+                <p>Pesquise a loja, confira sua reputação e desconfie de preços muito abaixo do normal.</p>
+            </article>
+
+            <article class="cartao golpe">
+                <h3>🔗 Phishing</h3>
+                <p>Mensagens falsas imitam bancos, lojas ou empresas para tentar obter senhas e informações pessoais.</p>
+                <strong>Como se proteger:</strong>
+                <p>Evite clicar em links suspeitos. Acesse os serviços pelo aplicativo ou site oficial.</p>
+            </article>
+        </div>
+        <p id="semResultado" class="aviso" hidden>Nenhum golpe encontrado.</p>
+    </section>
+
+    <section id="sos" class="pagina">
+        <h1>🚨 SOS Golpe</h1>
+        <p>Suspeita que caiu em um golpe? Veja algumas medidas importantes.</p>
+
+        <div class="passos">
+            <article class="cartao">
+                <h3>1. Entre em contato com seu banco</h3>
+                <p>Use o aplicativo, telefone ou site oficial para comunicar o ocorrido e perguntar quais medidas estão disponíveis.</p>
+            </article>
+            <article class="cartao">
+                <h3>2. Proteja suas contas</h3>
+                <p>Se houver risco de acesso indevido, altere suas senhas pelos canais oficiais e ative a verificação em duas etapas.</p>
+            </article>
+            <article class="cartao">
+                <h3>3. Guarde as informações</h3>
+                <p>Preserve mensagens, comprovantes, datas e dados da transação. Não apague as conversas.</p>
+            </article>
+            <article class="cartao">
+                <h3>4. Procure orientação</h3>
+                <p>Avise uma pessoa de confiança e procure a Polícia Civil ou os órgãos de defesa do consumidor, conforme o caso.</p>
+            </article>
+        </div>
+        <p class="aviso">O SafeWay oferece orientações. Ele não bloqueia transações nem garante a recuperação de valores.</p>
+    </section>
+
+    <section id="ajuda" class="pagina">
+        <h1>☎️ Central de Ajuda</h1>
+        <p>Procure os canais oficiais para receber orientação.</p>
+
+        <div class="cartoes">
+            <article class="cartao">
+                <h3>Banco Central</h3>
+                <p>Informações e serviços relacionados ao sistema financeiro.</p>
+                <a href="https://www.bcb.gov.br/" target="_blank" rel="noopener">Acessar site oficial ↗</a>
+            </article>
+            <article class="cartao">
+                <h3>Consumidor.gov.br</h3>
+                <p>Plataforma para registrar reclamações contra empresas participantes.</p>
+                <a href="https://www.consumidor.gov.br/" target="_blank" rel="noopener">Acessar plataforma ↗</a>
+            </article>
+            <article class="cartao">
+                <h3>Polícia Civil</h3>
+                <p>Procure a Polícia Civil do seu estado para registrar uma ocorrência.</p>
+                <a href="https://www.gov.br/" target="_blank" rel="noopener">Portal Gov.br ↗</a>
+            </article>
+            <article class="cartao">
+                <h3>Anatel</h3>
+                <p>Informações e atendimento sobre serviços de telecomunicações.</p>
+                <a href="https://www.gov.br/anatel/" target="_blank" rel="noopener">Acessar site oficial ↗</a>
+            </article>
+        </div>
+    </section>
+</main>
+
+<footer>
+    <p>🛡️ SafeWay — Mais segurança, mais tranquilidade.</p>
+    <small>Projeto educacional • 2026</small>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
+
+<button onclick="mostrarPagina('ia')">IA de Ajuda</button>
+<article class="cartao">
+    <span>🤖</span>
+    <h3>IA de Ajuda</h3>
+    <p>Faça perguntas e receba orientações sobre segurança digital.</p>
+    <button onclick="mostrarPagina('ia')">Conversar agora</button>
+</article>
+
+<section id="ia" class="pagina">
+    <h1>🤖 IA de Ajuda SafeWay</h1>
+    <p>
+        Tire dúvidas e receba orientações para reconhecer possíveis golpes
+        digitais.
+    </p>
+
+    <div class="chat-ia">
+        <div class="mensagem-ia">
+            <strong>SafeWay:</strong>
+            <p>Olá! Como posso ajudar você a se proteger hoje?</p>
+        </div>
+
+        <label for="perguntaIA">Digite sua dúvida:</label>
+        <textarea
+            id="perguntaIA"
+            rows="4"
+            placeholder="Ex.: Recebi uma mensagem dizendo que minha conta será bloqueada..."
+        ></textarea>
+
+        <p class="privacidade">
+            Não informe senhas, códigos de verificação, dados bancários
+            ou informações pessoais.
+        </p>
+
+        <button class="botao-ia" onclick="responderIA()">
+            Enviar pergunta
+        </button>
+
+        <div id="respostaIA" class="resposta-ia" aria-live="polite">
+            Sua orientação aparecerá aqui.
+        </div>
+    </div>
+</section>
