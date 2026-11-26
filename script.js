@@ -1,114 +1,150 @@
-
 function mostrarPagina(nome) {
-    const paginas = document.querySelectorAll(".pagina");
-
-    paginas.forEach(function(pagina) {
-        pagina.classList.remove("ativa");
-    });
-
-    document.getElementById(nome).classList.add("ativa");
-
-    window.scrollTo({
-        top: 0,
-        behavior: "smooth"
-    });
+  document.querySelectorAll(".pagina").forEach(p => p.classList.remove("ativa"));
+  const pagina = document.getElementById(nome);
+  if (pagina) pagina.classList.add("ativa");
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  if (nome === "radar" && !window.noticiasCarregadas) carregarNoticias();
 }
 
-function filtrarGolpes() {
-    const pesquisa = document
-        .getElementById("pesquisaGolpe")
-        .value.toLowerCase();
-
-    const golpes = document.querySelectorAll(".golpe");
-    let encontrados = 0;
-
-    golpes.forEach(function(golpe) {
-        const texto = golpe.innerText.toLowerCase();
-
-        if (texto.includes(pesquisa)) {
-            golpe.style.display = "block";
-            encontrados++;
-        } else {
-            golpe.style.display = "none";
-        }
-    });
-
-    document.getElementById("semResultado").hidden = encontrados > 0;
+function avisarPlano() {
+  alert("Os planos Premium são demonstrativos nesta versão. Ainda não há contratação ou pagamento ativo.");
 }
 
-function responderIA() {
+async function carregarNoticias() {
+  const lista = document.getElementById("listaNoticias");
+  const status = document.getElementById("statusNoticias");
+  const botao = document.getElementById("atualizarNoticias");
+  lista.innerHTML = "";
+  status.textContent = "Consultando fontes...";
+  botao.disabled = true;
+
+  try {
+    const resposta = await fetch("/api/news");
+    const tipo = resposta.headers.get("content-type") || "";
+    if (!tipo.includes("application/json")) {
+      throw new Error("O servidor não retornou dados JSON. Confira se o SafeWay foi aberto em http://localhost:3000.");
+    }
+    const dados = await resposta.json();
+    if (!resposta.ok) throw new Error(dados.error || "Não foi possível consultar as notícias.");
+
+    if (!dados.items || dados.items.length === 0) {
+      lista.innerHTML = '<p class="cartao">Nenhuma publicação recente foi encontrada. Tente novamente mais tarde.</p>';
+    } else {
+      dados.items.forEach(item => {
+        const card = document.createElement("article");
+        card.className = "cartao noticia";
+        const titulo = document.createElement("h3");
+        titulo.textContent = item.title;
+        const meta = document.createElement("p");
+        meta.className = "meta-noticia";
+        meta.textContent = `${item.source || "Fonte externa"} • ${formatarData(item.pubDate)}`;
+        const resumo = document.createElement("p");
+        resumo.textContent = item.description || "Abra a publicação original para consultar os detalhes.";
+        const link = document.createElement("a");
+        link.href = item.link;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = "Ler publicação original ↗";
+        card.append(titulo, meta, resumo, link);
+        lista.appendChild(card);
+      });
+    }
+    status.textContent = `Última consulta: ${new Date().toLocaleString("pt-BR")}.`;
+    window.noticiasCarregadas = true;
+  } catch (erro) {
+    lista.innerHTML = "";
+    const aviso = document.createElement("p");
+    aviso.className = "cartao";
+    aviso.textContent = `${erro.message} Confira se o servidor está iniciado.`;
+    lista.appendChild(aviso);
+    status.textContent = "Falha na consulta.";
+  } finally {
+    botao.disabled = false;
+  }
+}
+
+function formatarData(valor) {
+  if (!valor) return "Data não informada";
+  const data = new Date(valor);
+  return Number.isNaN(data.getTime()) ? "Data não informada" : data.toLocaleDateString("pt-BR");
+}
+
+function adicionarFala(texto, tipo) {
+  const historico = document.getElementById("historicoChat");
+  const fala = document.createElement("div");
+  fala.className = `fala ${tipo === "usuario" ? "fala-usuario" : "fala-assistente"}`;
+  const nome = document.createElement("strong");
+  nome.textContent = tipo === "usuario" ? "Você:" : "SafeWay:";
+  const paragrafo = document.createElement("p");
+  paragrafo.textContent = texto;
+  fala.append(nome, paragrafo);
+  historico.appendChild(fala);
+  historico.scrollTop = historico.scrollHeight;
+  return fala;
+}
+
+const formularioChat = document.getElementById("formChat");
+if (formularioChat) {
+  formularioChat.addEventListener("submit", async (evento) => {
+    evento.preventDefault();
     const campo = document.getElementById("perguntaIA");
-    const resposta = document.getElementById("respostaIA");
+    const botao = document.getElementById("enviarChat");
+    const pergunta = campo.value.trim();
+    if (!pergunta) return;
 
-    const pergunta = campo.value.toLowerCase().trim();
+    adicionarFala(pergunta, "usuario");
+    campo.value = "";
+    botao.disabled = true;
+    botao.textContent = "Aguarde...";
+    const carregando = adicionarFala("Estou verificando sua pergunta...", "assistente");
 
-    if (pergunta === "") {
-        resposta.textContent = "Digite uma dúvida para receber orientação.";
-        return;
+    try {
+      const resposta = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ question: pergunta })
+      });
+      const tipo = resposta.headers.get("content-type") || "";
+      if (!tipo.includes("application/json")) {
+        throw new Error("Resposta inesperada do servidor. Verifique se você abriu o SafeWay em localhost:3000.");
+      }
+      const dados = await resposta.json();
+      if (!resposta.ok) throw new Error(dados.error || "Não foi possível obter uma resposta.");
+      carregando.querySelector("p").textContent = dados.answer;
+    } catch (erro) {
+      carregando.querySelector("p").textContent = erro.message;
+    } finally {
+      botao.disabled = false;
+      botao.textContent = "Enviar pergunta ➤";
+      campo.focus();
     }
+  });
+}
 
-    let orientacao = "";
+function analisarMensagemSuspeita() {
+  const campo = document.getElementById("textoSuspeito");
+  const resultado = document.getElementById("resultadoAnalise");
+  const texto = campo.value.trim().toLowerCase();
+  if (!texto) {
+    resultado.textContent = "Digite uma mensagem sem dados pessoais para analisar.";
+    resultado.className = "resultado-analise resultado-atencao";
+    return;
+  }
 
-    if (
-        pergunta.includes("pix") ||
-        pergunta.includes("transferência") ||
-        pergunta.includes("transferencia")
-    ) {
-        orientacao =
-            "Atenção com pedidos de Pix e transferências. Confira o nome do destinatário e o valor antes de confirmar. Se já transferiu e suspeita de fraude, procure seu banco imediatamente pelos canais oficiais.";
-    }
+  const sinais = [
+    { nome: "pressão ou urgência", termos: ["urgente", "imediatamente", "hoje", "última chance", "bloqueada", "bloqueio"] },
+    { nome: "pedido de dados ou códigos", termos: ["senha", "código", "token", "confirme seus dados", "dados bancários"] },
+    { nome: "link ou acesso externo", termos: ["clique aqui", "acesse o link", "link", "http://", "https://"] },
+    { nome: "promessa ou vantagem inesperada", termos: ["prêmio", "ganhou", "grátis", "reembolso", "dinheiro liberado"] }
+  ];
+  const encontrados = sinais.filter(grupo => grupo.termos.some(t => texto.includes(t))).map(grupo => grupo.nome);
 
-    else if (
-        pergunta.includes("whatsapp") ||
-        pergunta.includes("número novo") ||
-        pergunta.includes("numero novo")
-    ) {
-        orientacao =
-            "Se alguém conhecido pedir dinheiro por um número novo, confirme a identidade por uma ligação ou por outro contato que você já conhece. Não faça a transferência antes de confirmar.";
-    }
-
-    else if (
-        pergunta.includes("link") ||
-        pergunta.includes("cliquei") ||
-        pergunta.includes("phishing")
-    ) {
-        orientacao =
-            "Links suspeitos podem levar a páginas falsas. Não informe senhas ou códigos. Acesse sua conta diretamente pelo aplicativo ou site oficial. Se você informou seus dados, procure o serviço afetado pelos canais oficiais.";
-    }
-
-    else if (
-        pergunta.includes("banco") ||
-        pergunta.includes("senha") ||
-        pergunta.includes("código") ||
-        pergunta.includes("codigo")
-    ) {
-        orientacao =
-            "Nunca compartilhe senhas ou códigos de verificação por mensagens ou ligações. Se alguém estiver se passando por funcionário do banco, encerre o contato e procure o banco pelo aplicativo ou telefone oficial.";
-    }
-
-    else if (
-        pergunta.includes("loja") ||
-        pergunta.includes("compra") ||
-        pergunta.includes("produto")
-    ) {
-        orientacao =
-            "Antes de comprar, pesquise a reputação da loja, confira se o endereço do site está correto e desconfie de ofertas muito abaixo do preço normal. Evite pagar antes de verificar a empresa.";
-    }
-
-    else if (
-        pergunta.includes("golpe") ||
-        pergunta.includes("fraude") ||
-        pergunta.includes("caí") ||
-        pergunta.includes("cai")
-    ) {
-        orientacao =
-            "Se você suspeita que sofreu um golpe, entre em contato com seu banco ou serviço envolvido pelos canais oficiais, proteja suas contas e preserve as mensagens e comprovantes. Peça ajuda a uma pessoa de confiança.";
-    }
-
-    else {
-        orientacao =
-            "Não encontrei uma orientação específica para essa pergunta. Desconfie de pedidos urgentes, não compartilhe dados pessoais e procure o canal oficial da empresa envolvida. Você também pode consultar o Radar de Golpes do SafeWay.";
-    }
-
-    resposta.textContent = "Orientação do SafeWay: " + orientacao;
+  resultado.className = "resultado-analise resultado-atencao";
+  if (encontrados.length) {
+    resultado.innerHTML = "<strong>Sinais que merecem atenção:</strong><ul>" +
+      encontrados.map(s => `<li>${s}</li>`).join("") +
+      "</ul><p>Isso não confirma que a mensagem seja fraudulenta. Não clique nem responda antes de verificar o assunto por um canal oficial independente.</p>";
+  } else {
+    resultado.innerHTML = "<strong>Nenhum dos padrões simples cadastrados foi encontrado.</strong><p>Isso não significa que a mensagem seja segura. Golpes podem usar outros textos e estratégias. Confirme sempre por canais oficiais.</p>";
+  }
 }
